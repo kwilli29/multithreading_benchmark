@@ -11,17 +11,17 @@ import pandas
 #from toexcel import panda_to_excel
 
 # Get # of processors
-NUM_PROCS=2
-try:
-    process = subprocess.Popen( "lscpu | grep -E 'Core\(s\) per socket:'", shell=True, 
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
-    )
-    output, _ = process.communicate()
+# NUM_PROCS=2
+# try:
+#     process = subprocess.Popen( "lscpu | grep -E 'Core\(s\) per socket:'", shell=True, 
+#         stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+#     )
+#     output, _ = process.communicate()
 
-    NUM_PROCS= int(output.strip().split(":")[1].split(" ")[-1])
-    # print('numproc: ', NUM_PROCS)
-except Exception as e:
-    NUM_PROCS=2
+#     NUM_PROCS= int(output.strip().split(":")[1].split(" ")[-1])
+#     # print('numproc: ', NUM_PROCS)
+# except Exception as e:
+#     NUM_PROCS=2
 
 def long_metrics(pfile, runs): # for 02 benchmarks --> get the difference between time measurements
 
@@ -41,21 +41,26 @@ def long_metrics(pfile, runs): # for 02 benchmarks --> get the difference betwee
             if row[0][0] == '#' or row[0][0] == 't': continue
             if row[0][0] == '*':
                 if PACC > 0.0: 
+                    print(PARA_AVGDIFFS, cntr, '1')
                     # accum. data in some way
                     PARA_AVGDIFFS[cntr] = PACC / float(line_cnt)
                     cntr+=1
                 if prevline and line_cnt == 0:
+                    print(PARA_AVGDIFFS, cntr, '2')
                     PARA_AVGDIFFS[cntr] = float(prevline) / 1.0
                     cntr+=1
+                print(PARA_AVGDIFFS, cntr, '3')
                 # reset individual run metrics
                 PACC = 0.0
                 line_cnt = 0
                 prevline = ''
                 continue
             if prevline:
+                print(PARA_AVGDIFFS, cntr, '4')
                 # get difference b/w this and prev time
                 PACC += ( float(row[0]) - float(prevline) )
                 line_cnt += 1
+            print(PARA_AVGDIFFS, cntr, '5')
             prevline = row[0]
 
     # if int(runs) != int(line_cnt): print('runs: ', runs, 'linecnt: ', line_cnt)

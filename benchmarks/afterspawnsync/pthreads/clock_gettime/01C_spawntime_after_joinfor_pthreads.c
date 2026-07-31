@@ -13,6 +13,7 @@
 #include "../../../include/numthreads.h"
 #include "../../../include/ctimer.h"
 #include <time.h>
+
 pthread_attr_t thread_affinity(char** arg_v){
 
     int pt_bind_core = -1;
@@ -48,11 +49,13 @@ pthread_attr_t thread_affinity(char** arg_v){
         // add cpu core to the cpuset
         CPU_SET(pt_master_core, &cpuset);
         pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset);
+
     }
 
     return attr;
 
-} 
+}
+
 /* Benchmark: 01C: Spawn timer after ; For-Loop+Join Spawns (Pthreads)
  */
 

@@ -55,6 +55,7 @@ pthread_attr_t thread_affinity(char** arg_v){
     return attr;
 
 } 
+
 /* Benchmark: 01E: Spawn timer after ; One Spawn (Pthreads)
  * Launch a bunch and measure when all done 
  */

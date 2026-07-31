@@ -116,7 +116,7 @@ int main(int argc, char *argv[]){
 
 	int ds, rc;
 	pthread_attr_t attr;
-	if( argc >= 4 && ((argv[3][0] != 'x') || (argv[4][0] != 'x') || (argv[5][0] != 'x'))) { attr= thread_affinity(argv); }
+	if( argc >= 4 && ((argv[3][0] != 'x')  || (argv[4][0] != 'x') || (argv[5][0] != 'x'))) { attr= thread_affinity(argv); }
     else {
         rc = pthread_attr_init(&attr);
         if (rc == -1) { perror("error in pthread_attr_init"); exit(1); }

@@ -42,7 +42,7 @@ void spawn_function_long(){
         i += 1.0;
 	}
 
-    // printf("**%d\t", __cilkrts_get_worker_number()); // print thread id
+    // printf("**%d %d\n", iter, __cilkrts_get_worker_number()); // print thread id
 
 	return;
 }

@@ -42,12 +42,13 @@ void spawn_function_long(){
         i += 1.0;
 	}
 
-    // printf("**%d\t", __cilkrts_get_worker_number()); // print thread id
+    // printf("**%d %d\t", iter, __cilkrts_get_worker_number()); // print thread id
 
 	return;
 }
 
 void spawn_function(){           // Simple Spawn Function
+
 	int x = 100; int y = 5000; int z = 1000000;
 
 	x = x + y + z;
@@ -68,7 +69,7 @@ int main(int argc, char *argv[]){
 	
 	for(int i = 0; i < iter; i++){ // sequentially spawn threads in a for loop
     	cilk_spawn spawn_function(); 
-    	//cilk_spawn spawn_function_long();
+    	// cilk_spawn spawn_function_long();
 	}
 	clock_gettime(CLOCK_MONOTONIC, &t_end); 
 

@@ -7,57 +7,66 @@ ITERS=50
 
 # Trial -- # THREADS
 
-#   1) NT=68
-    NT=2
-    #./runall.sh -r $RUNS -i $ITERS -nt $NT
+    declare -a threads_array=(2 4 8 16 32 64 128 256 272)
 
-#   2) NT=271
-    NT=16
-    #./runall.sh -r $RUNS -i $ITERS -nt $NT
-
-#   3) NT=272
-    NT=32
-    ./runall.sh -r $RUNS -i $ITERS -nt $NT
+    length1=${#threads_array[@]}
+    for (( i=0; i<${length1}; i++ ));
+    do
+            NT=${threads_array[$i]}
+            ./runall.sh -r $RUNS -i $ITERS -nt $NT
+    done
 
 # Trial 2 -- BIND OPTIONS
 # RUNS=30, ITERS=32, NT=32
 RUNS=30
 ITERS=50
-NT=32
-#       OpenMP***                   PT
-#   1)  P=cores B=spread          Bind Master**
-    OP="cores"
-    OB="close"
-    PM=48
-    ./runall.sh -r $RUNS -i $ITERS -nt $NT -bomp $OB -pomp $OP -pmpt $PM
-#   2)  P=cores B=close           Bind Kids* **
-    OP="cores"
-    OB="close"
-    PB=136
-    ./runall.sh -r $RUNS -i $ITERS -nt $NT -bomp $OB -pomp $OP -bpt $PB
-#   3)  P=cores B=false           Bind Master & Kids* **
-    OP="cores"
-    OB="close"
-    PB=24
-    PM=268
-    # ./runall.sh -r $RUNS -i $ITERS -nt $NT -bomp $OB -pomp $OP -bpt $PB -pmpt $PM
+NT=8
+
+#    OMP: 
+#    Bind: false, close, spread [true, master]
+#    Places: sockets, cores     [threads]
+#
+#    PT:
+#    Master:            2      8   16  
+#    All Children:     4     16  32
+
+# declare -a omp_bind=(false close spread true)
+# declare -a omp_places=(sockets cores threads 'x')
+# declare -a pthreads_master=(x 2 8 16)
+# declare -a pthreads_children=(x 4 16 32)
+
+# length=${#omp_places[@]}
+# length2=${#omp_bind[@]}
+# for (( i=0; i<${length}; i++ ));
+# do
+#     for (( j=0; j<${length2}; j++ ));
+#     do
+#         OP=${omp_places[$i]}
+#         OB=${omp_bind[$j]}
+#         PM=${pthreads_master[$i]}
+#         PB=${pthreads_children[$j]}
+
+#         ./runall.sh -r $RUNS -i $ITERS -nt $NT -bpt $PB -pmpt $PM
+
+#     done
+# done
 
 # * kids go to same place for now
 # ** chosen PT cores are arbitrary
 
 # Trial 3 -- # ITERS
 
-# NT=68
-RUNS=30
-NT=32 #
+# RUNS=30
+# NT=8 #
 
-#   1) ITERS=8
-    ITERS=75
-   # ./runall.sh -r $RUNS -i $ITERS -nt $NT
+#    declare -a iter_array=(2 4 8 16 32 64 128 256 272)
+#
+#    for numthreads in "${!threads_array[@]}"
+#    do
+#        NT=$numthreads
+#        ./runall.sh -r $RUNS -i $ITERS -nt $NT
+#    done
 
-#   2) ITERS=272 ****
-    ITERS=150
-   # ./runall.sh -r $RUNS -i $ITERS -nt $NT
 
 # Pthreads in loops can't have the # of created threads be less than the # of iterations, so Pthreads # iters = 272
 

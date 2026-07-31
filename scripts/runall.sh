@@ -1,6 +1,10 @@
 #!/bin/bash
 
-ARCH="galahad"
+ARCH="macbook" # $1
+LINUX=1
+if [ "$ARCH" = "macbook" ]; then
+    LINUX=0
+fi
 
 # OPTIONS:
 
@@ -144,7 +148,6 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-
 #### #### #### #### #### ####
 
 cilk_benchmarks() {
@@ -248,7 +251,10 @@ openmp_benchmarks() {
 
 }
 pthreads_benchmarks() { # pthread_self()
+
     cd pthreads/${CLOCK}
+
+    PTNT=$NUM_THREADS
 
     # Bind Settings
     if [[ $PT_BIND != "x" ]]; then
@@ -264,7 +270,7 @@ pthreads_benchmarks() { # pthread_self()
     # Other Settings
 
     if (( $NUM_THREADS < $ITERS )); then # !!!!
-        NUM_THREADS=$ITERS
+        PTNT=$ITERS
     fi
 
     # COMPILE
@@ -276,12 +282,12 @@ pthreads_benchmarks() { # pthread_self()
         for f in ./*; do
             if [[ -x "$f" && "${FN}" != "Makefile" ]]; then
                 FN="$(basename -- "$f")"
-                PTHREADS_DATA="data/${FN}_${NUM_THREADS}_${RUNS}_${ITERS}_${CLOCK}_${FCN}_${PT_BIND}_${PT_PLACES}_${PT_MASTER}.csv"
+                PTHREADS_DATA="data/${FN}_${PTNT}_${RUNS}_${ITERS}_${CLOCK}_${FCN}_${PT_BIND}_${PT_PLACES}_${PT_MASTER}.csv"
                 if [ ! -d "$f" ]; then
                     if [ ! -f ${PTHREADS_DATA} ]; then
                         touch ${PTHREADS_DATA}
                     fi
-                    ./${f} $NUM_THREADS $ITERS $PT_BIND $PT_PLACES $PT_MASTER >> ${PTHREADS_DATA}
+                    ./${f} $PTNT $ITERS $PT_BIND $PT_PLACES $PT_MASTER >> ${PTHREADS_DATA}
                 fi
             fi
         done
@@ -292,10 +298,10 @@ pthreads_benchmarks() { # pthread_self()
     # METRICS
     for f in data/*; do
         if [[ ! -d "$f" ]]; then
-            PATTERN="^data/[A-Z0-9]+_${NUM_THREADS}_${RUNS}_${ITERS}_${CLOCK}_${FCN}_${PT_BIND}_${PT_PLACES}_${PT_MASTER}\.csv$"
+            PATTERN="^data/[A-Z0-9]+_${PTNT}_${RUNS}_${ITERS}_${CLOCK}_${FCN}_${PT_BIND}_${PT_PLACES}_${PT_MASTER}\.csv$"
             if [[ "$f" =~ $PATTERN ]]; then
                 # file , nt , lang , runs , iters , clock , fcn , [bind settings] , [other settings] , arch
-                python3 ./../../../../scripts/process_metrics.py ${f} $NUM_THREADS $LANG $RUNS $ITERS $CLOCK $FCN "[${PT_BIND},${PT_PLACES},${PT_MASTER}]" "[]" $ARCH >> ../../../../scripts/${OUTPUT}
+                python3 ./../../../../scripts/process_metrics.py ${f} $PTNT $LANG $RUNS $ITERS $CLOCK $FCN "[${PT_BIND},${PT_PLACES},${PT_MASTER}]" "[]" $ARCH >> ../../../../scripts/${OUTPUT}
             fi
         fi
     done
@@ -304,6 +310,61 @@ pthreads_benchmarks() { # pthread_self()
     # CLEAN
     make clean &>/dev/null
 
+    cd ../..
+}
+pthreads_mac_benchmarks() { 
+
+    cd pthreads/${CLOCK}
+
+    PTNT=$NUM_THREADS
+
+    # Bind Settings --> Mac cannot do binding [from my hours of searching if you can]
+
+    # Schedule Settings
+    # Other Settings
+
+    if (( $NUM_THREADS < $ITERS )); then # !!!!
+        PTNT=$ITERS
+    fi
+
+    # COMPILE
+    make all
+
+    # GATHER EXECUTABLES & EXECUTE
+    for((i=0;i<($RUNS);i++)); 
+	do
+        for f in ./*; do
+            if [[ -x "$f" && "${FN}" != "Makefile" ]]; then
+                FN="$(basename -- "$f")"
+                PTHREADS_DATA="data/${FN}_${PTNT}_${RUNS}_${ITERS}_${CLOCK}_${FCN}_x_x_x.csv"
+                if [ ! -d "$f" ]; then
+                    if [ ! -f ${PTHREADS_DATA} ]; then
+                        touch ${PTHREADS_DATA}
+                    fi
+                    ./${f} $PTNT $ITERS $PT_BIND $PT_PLACES $PT_MASTER >> ${PTHREADS_DATA}
+                fi
+            fi
+        done
+    done
+
+    LANG="pthreads"
+
+    # METRICS
+    for f in data/*; do
+        if [[ ! -d "$f" ]]; then
+            PATTERN="^data/[A-Z0-9]+_${PTNT}_${RUNS}_${ITERS}_${CLOCK}_${FCN}_x_x_x\.csv$"
+            if [[ "$f" =~ $PATTERN ]]; then
+                # file , nt , lang , runs , iters , clock , fcn , [bind settings] , [other settings] , arch
+                python3 ./../../../../scripts/process_metrics.py ${f} $PTNT $LANG $RUNS $ITERS $CLOCK $FCN "[x,x,x]" "[]" $ARCH >> ../../../../scripts/${OUTPUT}
+            fi
+        fi
+    done
+
+
+    # CLEAN
+    make clean &>/dev/null
+
+    # exit into mac folder 
     cd ../..
 }
 serial_benchmarks() {
@@ -350,13 +411,24 @@ serial_benchmarks() {
 
 #### #### RUN BENCHMARKS #### ####
 
-OUTPUT="output/000_${NUM_THREADS}_${RUNS}_${ITERS}_${CLOCK}_${FCN}_${OMP_BIND}_${OMP_PLACES}_${PT_BIND}_${PT_MASTER}.csv"
+OUTPUT="output/002_${NUM_THREADS}_${RUNS}_${ITERS}_${CLOCK}_${FCN}_${OMP_BIND}_${OMP_PLACES}_${PT_BIND}_${PT_MASTER}.csv"
 if [ -f ${OUTPUT} ]; then
     rm ${OUTPUT}
 fi
+OUTPUT="output/001_${NUM_THREADS}_${RUNS}_${ITERS}_${CLOCK}_${FCN}_${OMP_BIND}_${OMP_PLACES}_${PT_BIND}_${PT_MASTER}.csv"
 touch ${OUTPUT}
 
 cd ../benchmarks/
+
+if (( $LINUX == 0 )); then
+    cd mac/
+    rm pthreads/${CLOCK}/data/0*_${NUM_THREADS}_${RUNS}_${ITERS}_${CLOCK}_${FCN}_x_x_x.csv
+    if (( $NUM_THREADS < $ITERS )); then # !!!!
+        rm pthreads/${CLOCK}/data/0*_${ITERS}_${RUNS}_${ITERS}_${CLOCK}_${FCN}_x_x_x.csv
+    fi
+    pthreads_mac_benchmarks
+    cd ..
+fi
 
 cd afterspawn/
 
@@ -368,12 +440,14 @@ cd afterspawn/
     rm openmp/${CLOCK}/data/01*_${NUM_THREADS}_${RUNS}_${ITERS}_${CLOCK}_${FCN}_${OMP_BIND}_${OMP_PLACES}.csv
     openmp_benchmarks 1 # makefile# executablename ?
 
-    # pthreads
-    rm pthreads/${CLOCK}/data/01*_${NUM_THREADS}_${RUNS}_${ITERS}_${CLOCK}_${FCN}_${PT_BIND}_${PT_PLACES}_${PT_MASTER}.csv
-    if (( $NUM_THREADS < $ITERS )); then # !!!!
-        rm pthreads/${CLOCK}/data/01*_${ITERS}_${RUNS}_${ITERS}_${CLOCK}_${FCN}_${PT_BIND}_${PT_PLACES}_${PT_MASTER}.csv
+    # pthreads - Linux
+    if (( $LINUX == 1)); then
+        rm pthreads/${CLOCK}/data/01*_${NUM_THREADS}_${RUNS}_${ITERS}_${CLOCK}_${FCN}_${PT_BIND}_${PT_PLACES}_${PT_MASTER}.csv
+        if (( $NUM_THREADS < $ITERS )); then # !!!!
+            rm pthreads/${CLOCK}/data/01*_${ITERS}_${RUNS}_${ITERS}_${CLOCK}_${FCN}_${PT_BIND}_${PT_PLACES}_${PT_MASTER}.csv
+        fi
+        pthreads_benchmarks 1
     fi
-    pthreads_benchmarks 1
 
     # serial
     rm serial/${CLOCK}/data/01*_${NUM_THREADS}_${RUNS}_${ITERS}_${CLOCK}_${FCN}.csv
@@ -392,11 +466,13 @@ cd afterspawnsync/
     openmp_benchmarks 1 # makefile# executablename ?
 
     # pthreads
-    rm pthreads/${CLOCK}/data/01*_${NUM_THREADS}_${RUNS}_${ITERS}_${CLOCK}_${FCN}_${PT_BIND}_${PT_PLACES}_${PT_MASTER}.csv
-    if (( $NUM_THREADS < $ITERS )); then # !!!!
-        rm pthreads/${CLOCK}/data/01*_${ITERS}_${RUNS}_${ITERS}_${CLOCK}_${FCN}_${PT_BIND}_${PT_PLACES}_${PT_MASTER}.csv
-    fi    
-    pthreads_benchmarks 1
+    if (( $LINUX == 1)); then
+        rm pthreads/${CLOCK}/data/01*_${NUM_THREADS}_${RUNS}_${ITERS}_${CLOCK}_${FCN}_${PT_BIND}_${PT_PLACES}_${PT_MASTER}.csv
+        if (( $NUM_THREADS < $ITERS )); then # !!!!
+            rm pthreads/${CLOCK}/data/01*_${ITERS}_${RUNS}_${ITERS}_${CLOCK}_${FCN}_${PT_BIND}_${PT_PLACES}_${PT_MASTER}.csv
+        fi    
+        pthreads_benchmarks 1
+    fi
 
 cd ..
 
@@ -411,11 +487,13 @@ cd beforespawn/
     openmp_benchmarks 2 # makefile# executablename ?
 
     # pthreads
-    rm pthreads/${CLOCK}/data/02*_${NUM_THREADS}_${RUNS}_${ITERS}_${CLOCK}_${FCN}_${PT_BIND}_${PT_PLACES}_${PT_MASTER}.csv
-    if (( $NUM_THREADS < $ITERS )); then # !!!!
-        rm pthreads/${CLOCK}/data/02*_${ITERS}_${RUNS}_${ITERS}_${CLOCK}_${FCN}_${PT_BIND}_${PT_PLACES}_${PT_MASTER}.csv
-    fi    
-    pthreads_benchmarks 2
+    if (( $LINUX == 1)); then
+        rm pthreads/${CLOCK}/data/02*_${NUM_THREADS}_${RUNS}_${ITERS}_${CLOCK}_${FCN}_${PT_BIND}_${PT_PLACES}_${PT_MASTER}.csv
+        if (( $NUM_THREADS < $ITERS )); then # !!!!
+            rm pthreads/${CLOCK}/data/02*_${ITERS}_${RUNS}_${ITERS}_${CLOCK}_${FCN}_${PT_BIND}_${PT_PLACES}_${PT_MASTER}.csv
+        fi    
+        pthreads_benchmarks 2
+    fi
 
     # serial
     rm serial/${CLOCK}/data/02*_${NUM_THREADS}_${RUNS}_${ITERS}_${CLOCK}_${FCN}.csv
@@ -434,11 +512,13 @@ cd returnspawn/
     openmp_benchmarks 3 # makefile# executablename ?
 
     # pthreads
-    rm pthreads/${CLOCK}/data/03*_${NUM_THREADS}_${RUNS}_${ITERS}_${CLOCK}_${FCN}_${PT_BIND}_${PT_PLACES}_${PT_MASTER}.csv
-    if (( $NUM_THREADS < $ITERS )); then # !!!!
-        rm pthreads/${CLOCK}/data/03*_${ITERS}_${RUNS}_${ITERS}_${CLOCK}_${FCN}_${PT_BIND}_${PT_PLACES}_${PT_MASTER}.csv
+    if (( $LINUX == 1)); then
+        rm pthreads/${CLOCK}/data/03*_${NUM_THREADS}_${RUNS}_${ITERS}_${CLOCK}_${FCN}_${PT_BIND}_${PT_PLACES}_${PT_MASTER}.csv
+        if (( $NUM_THREADS < $ITERS )); then # !!!!
+            rm pthreads/${CLOCK}/data/03*_${ITERS}_${RUNS}_${ITERS}_${CLOCK}_${FCN}_${PT_BIND}_${PT_PLACES}_${PT_MASTER}.csv
+        fi
+        pthreads_benchmarks 3
     fi
-    pthreads_benchmarks 3
 
     # serial
     rm serial/${CLOCK}/data/03*_${NUM_THREADS}_${RUNS}_${ITERS}_${CLOCK}_${FCN}.csv
@@ -457,11 +537,13 @@ cd startspawnfcn/
     openmp_benchmarks 4 # makefile# executablename ?
 
     # pthreads
-    rm pthreads/${CLOCK}/data/04*_${NUM_THREADS}_${RUNS}_${ITERS}_${CLOCK}_${FCN}_${PT_BIND}_${PT_PLACES}_${PT_MASTER}.csv
-    if (( $NUM_THREADS < $ITERS )); then # !!!!
-        rm pthreads/${CLOCK}/data/04*_${ITERS}_${RUNS}_${ITERS}_${CLOCK}_${FCN}_${PT_BIND}_${PT_PLACES}_${PT_MASTER}.csv
-    fi    
-    pthreads_benchmarks 4
+    if (( $LINUX == 1)); then
+        rm pthreads/${CLOCK}/data/04*_${NUM_THREADS}_${RUNS}_${ITERS}_${CLOCK}_${FCN}_${PT_BIND}_${PT_PLACES}_${PT_MASTER}.csv
+        if (( $NUM_THREADS < $ITERS )); then # !!!!
+            rm pthreads/${CLOCK}/data/04*_${ITERS}_${RUNS}_${ITERS}_${CLOCK}_${FCN}_${PT_BIND}_${PT_PLACES}_${PT_MASTER}.csv
+        fi    
+        pthreads_benchmarks 4
+    fi
 
     # serial
     rm serial/${CLOCK}/data/04*_${NUM_THREADS}_${RUNS}_${ITERS}_${CLOCK}_${FCN}.csv
@@ -480,11 +562,13 @@ cd spawntree/
     openmp_benchmarks 6 # makefile# executablename ?
 
     # pthreads
-    rm pthreads/${CLOCK}/data/06*_${NUM_THREADS}_${RUNS}_${ITERS}_${CLOCK}_${FCN}_${PT_BIND}_${PT_PLACES}_${PT_MASTER}.csv
-    if (( $NUM_THREADS < $ITERS )); then 
-        rm pthreads/${CLOCK}/data/06*_${ITERS}_${RUNS}_${ITERS}_${CLOCK}_${FCN}_${PT_BIND}_${PT_PLACES}_${PT_MASTER}.csv
+    if (( $LINUX == 1)); then
+        rm pthreads/${CLOCK}/data/06*_${NUM_THREADS}_${RUNS}_${ITERS}_${CLOCK}_${FCN}_${PT_BIND}_${PT_PLACES}_${PT_MASTER}.csv
+        if (( $NUM_THREADS < $ITERS )); then 
+            rm pthreads/${CLOCK}/data/06*_${ITERS}_${RUNS}_${ITERS}_${CLOCK}_${FCN}_${PT_BIND}_${PT_PLACES}_${PT_MASTER}.csv
+        fi
+        pthreads_benchmarks 6
     fi
-    pthreads_benchmarks 6
 
     # serial
     rm serial/${CLOCK}/data/06*_${NUM_THREADS}_${RUNS}_${ITERS}_${CLOCK}_${FCN}.csv
@@ -493,6 +577,7 @@ cd spawntree/
 cd ..
 
 cd ../scripts/
+
 
 #### #### #### #### #### ####
 

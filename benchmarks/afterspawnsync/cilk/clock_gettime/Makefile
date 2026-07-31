@@ -7,18 +7,17 @@
 #	DETECTED_OS := $(shell uname -s)
 #endif
 
-XCRUN=""
-DETECTED_OS= $$(uname -s)
-# if Mac, set xcrun
+XCRUN=
+DETECTED_OS= $(shell uname -s)
 ifeq ($(DETECTED_OS),Darwin)
-	XCRUN="xcrun ""
+    XCRUN=xcrun 
 else
-	XCRUN=""
+    XCRUN=
 endif
 
-CC=		$(XCRUN)/opt/$$(ls /opt | grep "opencilk")/bin/clang # /opt/opencilk-2/bin/clang 
-CFLAGS=		-fopencilk -O3 -Og -g #-fcilktool=cilkscale-benchmark #-lm # -fcilktool=cilkscale -lm -Wall -Wextra -Wconversion -std=c11 -Werror
-INCFILES=   ../../../include/numthreads.c
+CC=		$(XCRUN) /opt/$$(ls /opt | grep "opencilk")/bin/clang # /opt/opencilk-2/bin/clang 
+CFLAGS= -fopencilk -O3 -Og -g #-fcilktool=cilkscale-benchmark #-lm # -fcilktool=cilkscale -lm -Wall -Wextra -Wconversion -std=c11 -Werror
+INCFILES= ../../../include/numthreads.c
 SOURCE=		$(wildcard *.c)
 TARGETS=	$(SOURCE:.c=)	
 
@@ -32,9 +31,6 @@ all:
 	done
 
 build: $(TARGETS)
-
-serial:
-	$(MAKE) -C serial all
 
 01N: 01N_spawntime_after_for_nosync_cilk.c
 	$(CC) $(CFLAGS) $(INCFILES) 01N_spawntime_after_for_nosync_cilk.c -o 01N -lm 
@@ -53,12 +49,6 @@ serial:
 
 02B: 02B_spawntime_before_cilkscope_cilk.c
 	$(CC) $(CFLAGS) $(INCFILES) 02B_spawntime_before_cilkscope_cilk.c -o 02B -lm 
-
-05A: 05A_spawntime_window_cilk.c
-	$(CC) $(CFLAGS) $(INCFILES) 05A_spawntime_window_cilk.c -o 05A -lm 
-
-04A: 04A_spawntime_beforefunc_sequential_cilk.c
-	$(CC) $(CFLAGS) $(INCFILES) 04A_spawntime_beforefunc_sequential_cilk.c -o 04A -lm 
 
 04B: 04B_spawntime_beforefunc_cilkscope_cilk.c
 	$(CC) $(CFLAGS) $(INCFILES) 04B_spawntime_beforefunc_cilkscope_cilk.c -o 04B -lm 
