@@ -41,26 +41,26 @@ def long_metrics(pfile, runs): # for 02 benchmarks --> get the difference betwee
             if row[0][0] == '#' or row[0][0] == 't': continue
             if row[0][0] == '*':
                 if PACC > 0.0: 
-                    print(PARA_AVGDIFFS, cntr, '1')
+                    # print(PARA_AVGDIFFS, cntr, '1')
                     # accum. data in some way
                     PARA_AVGDIFFS[cntr] = PACC / float(line_cnt)
                     cntr+=1
                 if prevline and line_cnt == 0:
-                    print(PARA_AVGDIFFS, cntr, '2')
+                    # print(PARA_AVGDIFFS, cntr, '2')
                     PARA_AVGDIFFS[cntr] = float(prevline) / 1.0
                     cntr+=1
-                print(PARA_AVGDIFFS, cntr, '3')
+                # print(PARA_AVGDIFFS, cntr, '3')
                 # reset individual run metrics
                 PACC = 0.0
                 line_cnt = 0
                 prevline = ''
                 continue
             if prevline:
-                print(PARA_AVGDIFFS, cntr, '4')
+                #print(PARA_AVGDIFFS, cntr, '4')
                 # get difference b/w this and prev time
                 PACC += ( float(row[0]) - float(prevline) )
                 line_cnt += 1
-            print(PARA_AVGDIFFS, cntr, '5')
+            # print(PARA_AVGDIFFS, cntr, '5')
             prevline = row[0]
 
     # if int(runs) != int(line_cnt): print('runs: ', runs, 'linecnt: ', line_cnt)
@@ -71,7 +71,7 @@ def long_metrics(pfile, runs): # for 02 benchmarks --> get the difference betwee
     median_value= float(df[0].median())
     max_value=float(df[0].max())
     min_value=float(df[0].min())
-    if min_value <= 0.0: min_value = -1.0
+    if min_value <= 0.0: min_value = 0.00000001
     # print('PANDAS: ', mean_value, median_value, max_value, min_value, float(median_value/min_value), float( max_value/min_value))
 
     # AVERAGE

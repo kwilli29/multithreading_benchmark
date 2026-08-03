@@ -411,11 +411,10 @@ serial_benchmarks() {
 
 #### #### RUN BENCHMARKS #### ####
 
-OUTPUT="output/002_${NUM_THREADS}_${RUNS}_${ITERS}_${CLOCK}_${FCN}_${OMP_BIND}_${OMP_PLACES}_${PT_BIND}_${PT_MASTER}.csv"
+OUTPUT="output/001_${NUM_THREADS}_${RUNS}_${ITERS}_${CLOCK}_${FCN}_${OMP_BIND}_${OMP_PLACES}_${PT_BIND}_${PT_MASTER}.csv"
 if [ -f ${OUTPUT} ]; then
     rm ${OUTPUT}
 fi
-OUTPUT="output/001_${NUM_THREADS}_${RUNS}_${ITERS}_${CLOCK}_${FCN}_${OMP_BIND}_${OMP_PLACES}_${PT_BIND}_${PT_MASTER}.csv"
 touch ${OUTPUT}
 
 cd ../benchmarks/

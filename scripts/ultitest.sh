@@ -30,26 +30,26 @@ NT=8
 #    Master:            2      8   16  
 #    All Children:     4     16  32
 
-# declare -a omp_bind=(false close spread true)
-# declare -a omp_places=(sockets cores threads 'x')
-# declare -a pthreads_master=(x 2 8 16)
-# declare -a pthreads_children=(x 4 16 32)
+declare -a omp_bind=(false close spread true)
+declare -a omp_places=(sockets cores threads 'x')
+declare -a pthreads_master=(x 2 8 16)
+declare -a pthreads_children=(x 4 16 32)
 
-# length=${#omp_places[@]}
-# length2=${#omp_bind[@]}
-# for (( i=0; i<${length}; i++ ));
-# do
-#     for (( j=0; j<${length2}; j++ ));
-#     do
-#         OP=${omp_places[$i]}
-#         OB=${omp_bind[$j]}
-#         PM=${pthreads_master[$i]}
-#         PB=${pthreads_children[$j]}
+length=${#omp_places[@]}
+length2=${#omp_bind[@]}
+for (( i=0; i<${length}; i++ ));
+do
+    for (( j=0; j<${length2}; j++ ));
+    do
+        OP=${omp_places[$i]}
+        OB=${omp_bind[$j]}
+        PM=${pthreads_master[$i]}
+        PB=${pthreads_children[$j]}
 
-#         ./runall.sh -r $RUNS -i $ITERS -nt $NT -bpt $PB -pmpt $PM
+        ./runall.sh -r $RUNS -i $ITERS -nt $NT -bpt $PB -pmpt $PM -bomp $OB -pomp $OP
 
-#     done
-# done
+    done
+done
 
 # * kids go to same place for now
 # ** chosen PT cores are arbitrary
